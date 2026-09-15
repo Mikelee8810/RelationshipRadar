@@ -55,7 +55,8 @@ import com.relationshipradar.app.engine.PauseOption
 import com.relationshipradar.app.engine.RadarStatus
 import com.relationshipradar.app.engine.ReminderEngine
 import com.relationshipradar.app.engine.SnoozeOption
-import com.relationshipradar.app.ui.Avatar
+import com.relationshipradar.app.ui.AvatarPicker
+import com.relationshipradar.app.ui.Face
 import com.relationshipradar.app.ui.Format
 import com.relationshipradar.app.ui.Hairline
 import com.relationshipradar.app.ui.Hint
@@ -87,6 +88,7 @@ fun PersonScreen(vm: RadarViewModel, personId: Long, onLog: () -> Unit, onBack: 
             title = {},
             navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Back") } },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+            windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0), // Scaffold already applied the status bar inset
         )
         LazyColumn(contentPadding = PaddingValues(bottom = Radar.sp5.dp), modifier = Modifier.weight(1f)) {
             // ---- Hero: big shaped avatar wrapped in the interval ring ------------------------
@@ -98,8 +100,10 @@ fun PersonScreen(vm: RadarViewModel, personId: Long, onLog: () -> Unit, onBack: 
                             progress = { frac }, modifier = Modifier.size(156.dp),
                             color = StatusColors.accent(radar.status), trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                         )
-                        Avatar(person.id, person.displayName, radar.status, size = 112)
+                        Face(person.id, person.displayName, radar.status, person.avatar, person.contactLookupKey, size = 120, modifier = Modifier.clickable { dialog = "avatar" }, hiRes = true)
                     }
+                    Spacer(Modifier.height(6.dp))
+                    TextButton(onClick = { dialog = "avatar" }) { Text("Change face") }
                     Spacer(Modifier.height(Radar.sp3.dp))
                     Text(person.displayName, style = MaterialTheme.typography.headlineLarge, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     Spacer(Modifier.height(4.dp))
@@ -211,6 +215,7 @@ fun PersonScreen(vm: RadarViewModel, personId: Long, onLog: () -> Unit, onBack: 
                 }) { Text("OK") }
             }) { DatePicker(state) }
         }
+        "avatar" -> AvatarPicker(person.avatar, person.contactLookupKey != null, onPick = { vm.updatePerson(person.copy(avatar = it)); dialog = null }, onDismiss = { dialog = null })
         "archive" -> AlertDialog(
             onDismissRequest = { dialog = null },
             title = { Text("Archive ${person.displayName}?") },

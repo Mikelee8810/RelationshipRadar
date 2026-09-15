@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
@@ -68,6 +69,54 @@ object PersonShapes {
         RadarStatus.DUE_SOON -> 0.35f
         RadarStatus.OVERDUE -> 0.7f
         RadarStatus.VERY_OVERDUE -> 1f
+    }
+}
+
+/**
+ * A person's face. Photo if they have one, else their chosen 3D avatar, else initials — always
+ * clipped to their expressive shape, which morphs angular as they go overdue. Overdue photos
+ * lose saturation so the list reads at a glance even without colour.
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun Face(id: Long, name: String, status: RadarStatus, avatar: String?, lookupKey: String?, size: Int = 56, modifier: Modifier = Modifier, hiRes: Boolean = size >= 96) {
+    val base = remember(id) { PersonShapes.forId(id) }
+    val morph = remember(base) { Morph(base, PersonShapes.cold) }
+    val progress by animateFloatAsState(PersonShapes.stress(status), label = "shape")
+    val shape = remember(progress) { MorphShape(morph, progress) }
+    val photo = if (avatar == "photo") ContactPhotos.remember(lookupKey, hiRes) else null
+    val bundled = BundledAvatars.parse(avatar)
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val sat by animateFloatAsState(1f - 0.8f * PersonShapes.stress(status), label = "sat")
+
+    if (photo != null) {
+        androidx.compose.foundation.Image(
+            photo, contentDescription = name,
+            modifier = modifier.size(size.dp).clip(shape),
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+            colorFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(sat) }),
+        )
+    } else if (bundled != null) {
+        Box(modifier.size(size.dp).clip(shape).background(StatusColors.container(status)), contentAlignment = Alignment.Center) {
+            androidx.compose.foundation.Image(
+                androidx.compose.ui.res.painterResource(BundledAvatars.resId(ctx, bundled)), contentDescription = name,
+                modifier = Modifier.size((size * 0.72f).dp),
+                colorFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(sat) }),
+            )
+        }
+    } else {
+        Avatar(id, name, status, size, modifier)
+    }
+}
+
+/** A Compose Shape backed by a Morph at a fixed progress. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+class MorphShape(private val morph: Morph, private val progress: Float) : androidx.compose.ui.graphics.Shape {
+    override fun createOutline(size: androidx.compose.ui.geometry.Size, layoutDirection: androidx.compose.ui.unit.LayoutDirection, density: androidx.compose.ui.unit.Density): androidx.compose.ui.graphics.Outline {
+        val p = Path()
+        morph.toPath(progress, p)
+        val m = Matrix(); m.scale(size.width, size.height); p.transform(m)
+        return androidx.compose.ui.graphics.Outline.Generic(p)
     }
 }
 

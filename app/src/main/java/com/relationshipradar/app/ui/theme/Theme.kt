@@ -52,7 +52,7 @@ object StatusColors {
         RadarStatus.GOOD -> MaterialTheme.colorScheme.primaryContainer
         RadarStatus.DUE_SOON -> MaterialTheme.colorScheme.tertiaryContainer
         RadarStatus.OVERDUE -> MaterialTheme.colorScheme.errorContainer
-        RadarStatus.VERY_OVERDUE -> MaterialTheme.colorScheme.error
+        RadarStatus.VERY_OVERDUE -> MaterialTheme.colorScheme.errorContainer
         RadarStatus.TRACK_ONLY, RadarStatus.PAUSED, RadarStatus.SNOOZED -> MaterialTheme.colorScheme.surfaceContainerHighest
     }
 
@@ -60,7 +60,7 @@ object StatusColors {
         RadarStatus.GOOD -> MaterialTheme.colorScheme.onPrimaryContainer
         RadarStatus.DUE_SOON -> MaterialTheme.colorScheme.onTertiaryContainer
         RadarStatus.OVERDUE -> MaterialTheme.colorScheme.onErrorContainer
-        RadarStatus.VERY_OVERDUE -> MaterialTheme.colorScheme.onError
+        RadarStatus.VERY_OVERDUE -> MaterialTheme.colorScheme.onErrorContainer
         RadarStatus.TRACK_ONLY, RadarStatus.PAUSED, RadarStatus.SNOOZED -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 

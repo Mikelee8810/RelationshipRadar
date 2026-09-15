@@ -74,11 +74,13 @@ class ContactsImporter(private val context: Context, private val repo: Repositor
             }
             val personId = if (person == null) {
                 created++
-                repo.createPerson(name)
+                val id = repo.createPerson(name)
+                repo.getPerson(id)?.let { repo.updatePerson(it.copy(contactLookupKey = key, avatar = "photo")) }
+                id
             } else {
                 updated++
                 if (person.archived) repo.restore(person.id) // returning contact: restore + merge
-                if (person.displayName != name) repo.updatePerson(person.copy(displayName = name))
+                if (person.displayName != name || person.contactLookupKey != key) repo.updatePerson(person.copy(displayName = name, contactLookupKey = key, avatar = person.avatar ?: "photo"))
                 person.id
             }
             repo.addIdentifier(personId, IdentifierType.CONTACT_LOOKUP, key)

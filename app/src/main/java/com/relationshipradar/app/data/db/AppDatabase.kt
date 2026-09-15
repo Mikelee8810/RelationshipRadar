@@ -8,10 +8,10 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [Category::class, Person::class, ContactIdentifier::class, Interaction::class, ReminderState::class, ConnectorCursor::class, PendingIdentity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
-    // Expand-only: v2 adds two tables, touches nothing existing.
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    // Expand-only: v2 adds two tables; v3 adds two nullable columns to people.
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao

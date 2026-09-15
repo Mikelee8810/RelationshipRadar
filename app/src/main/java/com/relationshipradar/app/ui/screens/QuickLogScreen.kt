@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -77,22 +78,21 @@ fun QuickLogScreen(vm: RadarViewModel, preselectedPersonId: Long?, onDone: () ->
         Text("Who?", style = MaterialTheme.typography.titleLarge)
         if (selected == null) {
             OutlinedTextField(query, { query = it }, label = { Text("Search people") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            val matches = radar.filter { query.isBlank() || it.person.displayName.contains(query, ignoreCase = true) }.take(8)
+            val matches = radar.filter { query.isBlank() || it.person.displayName.contains(query, ignoreCase = true) }.take(12)
             if (matches.isEmpty()) {
                 Text("No one matches. Add them from the + button first.", style = MaterialTheme.typography.bodySmall)
             }
-            LazyColumn(Modifier.height((matches.size * 56).coerceAtMost(336).dp)) {
-                items(matches, key = { it.person.id }) { r ->
-                    ListItem(
-                        headlineContent = { Text(r.person.displayName) },
-                        supportingContent = { Text("Last effort " + Format.ago(r.lastEffortAt).lowercase()) },
-                        leadingContent = { com.relationshipradar.app.ui.Avatar(r.person.id, r.person.displayName, r.status, 40) },
-                        modifier = Modifier.fillMaxWidth().clickable { personId = r.person.id },
-                    )
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp), maxItemsInEachRow = 4) {
+                matches.forEach { r ->
+                    Column(Modifier.width(72.dp).clickable { personId = r.person.id }, horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                        com.relationshipradar.app.ui.Face(r.person.id, r.person.displayName, r.status, r.person.avatar, r.person.contactLookupKey, 64)
+                        Text(r.person.displayName.substringBefore(' '), style = MaterialTheme.typography.labelMedium, maxLines = 1)
+                    }
                 }
             }
         } else {
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                com.relationshipradar.app.ui.Face(selected.person.id, selected.person.displayName, selected.status, selected.person.avatar, selected.person.contactLookupKey, 56)
                 Text(selected.person.displayName, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
                 if (preselectedPersonId == null) TextButton(onClick = { personId = null }) { Text("Change") }
             }

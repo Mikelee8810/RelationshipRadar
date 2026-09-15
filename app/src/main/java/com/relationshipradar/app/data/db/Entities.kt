@@ -61,6 +61,10 @@ data class Person(
     /** Set once the user answered "What is this person to you?" (or chose Later twice). */
     val categorizationPromptCount: Int = 0,
     val createdAt: Long = System.currentTimeMillis(),
+    /** "photo" = contact photo, "avatar:NN" = bundled 3D avatar, null = initials. */
+    @androidx.room.ColumnInfo(defaultValue = "NULL") val avatar: String? = null,
+    /** Contact lookup key, cached here so the photo can be loaded without a join. */
+    @androidx.room.ColumnInfo(defaultValue = "NULL") val contactLookupKey: String? = null,
 )
 
 @Entity(
