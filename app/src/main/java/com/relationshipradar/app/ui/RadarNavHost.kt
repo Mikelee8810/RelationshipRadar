@@ -35,6 +35,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.relationshipradar.app.ui.screens.CategoriesScreen
 import com.relationshipradar.app.ui.screens.ConnectorsScreen
+import com.relationshipradar.app.ui.screens.HealthScreen
 import com.relationshipradar.app.ui.screens.WhoIsThisScreen
 import com.relationshipradar.app.ui.screens.DashboardScreen
 import com.relationshipradar.app.ui.screens.NewPeopleScreen
@@ -49,6 +50,7 @@ object Routes {
     const val CATEGORIES = "categories"
     const val CONNECTORS = "connectors"
     const val WHO = "who"
+    const val HEALTH = "health"
     const val PERSON = "person/{id}"
     const val LOG = "log?personId={personId}"
     fun person(id: Long) = "person/$id"
@@ -74,6 +76,7 @@ fun RadarNavHost(vm: RadarViewModel, openPersonId: Long?) {
         route == Routes.CATEGORIES -> "Categories"
         route == Routes.CONNECTORS -> "Sources"
         route == Routes.WHO -> "Who is this?"
+        route == Routes.HEALTH -> "Health"
         route.startsWith("log") -> "Log contact"
         else -> ""
     }
@@ -108,7 +111,8 @@ fun RadarNavHost(vm: RadarViewModel, openPersonId: Long?) {
         NavHost(nav, startDestination = Routes.RADAR, modifier = Modifier.padding(padding)) {
             composable(Routes.RADAR) { DashboardScreen(vm, { nav.navigate(Routes.person(it)) }, { nav.navigate(Routes.NEW_PEOPLE) }, { nav.navigate(Routes.WHO) }) }
             composable(Routes.NEW_PEOPLE) { NewPeopleScreen(vm) }
-            composable(Routes.SETTINGS) { SettingsScreen(vm, onOpenCategories = { nav.navigate(Routes.CATEGORIES) }, onOpenConnectors = { nav.navigate(Routes.CONNECTORS) }, onOpenWho = { nav.navigate(Routes.WHO) }) }
+            composable(Routes.SETTINGS) { SettingsScreen(vm, onOpenCategories = { nav.navigate(Routes.CATEGORIES) }, onOpenConnectors = { nav.navigate(Routes.CONNECTORS) }, onOpenWho = { nav.navigate(Routes.WHO) }, onOpenHealth = { nav.navigate(Routes.HEALTH) }) }
+            composable(Routes.HEALTH) { HealthScreen(vm) }
             composable(Routes.CONNECTORS) { ConnectorsScreen(vm) }
             composable(Routes.WHO) { WhoIsThisScreen(vm) }
             composable(Routes.CATEGORIES) { CategoriesScreen(vm, showAddCategory) { showAddCategory = false } }

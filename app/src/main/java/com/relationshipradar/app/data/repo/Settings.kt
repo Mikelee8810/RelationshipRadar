@@ -17,6 +17,8 @@ data class AppSettings(
     val individualAlertsEnabled: Boolean = true,
     val lastContactsSyncAt: Long = 0L,
     val onboardingDone: Boolean = false,
+    val lastReminderRunAt: Long = 0L,
+    val lastScanRunAt: Long = 0L,
 )
 
 class Settings(private val context: Context) {
@@ -26,6 +28,8 @@ class Settings(private val context: Context) {
         val individual = booleanPreferencesKey("individual_alerts")
         val lastSync = longPreferencesKey("last_contacts_sync")
         val onboarding = booleanPreferencesKey("onboarding_done")
+        val lastReminderRun = longPreferencesKey("last_reminder_run")
+        val lastScanRun = longPreferencesKey("last_scan_run")
     }
 
     val flow: Flow<AppSettings> = context.store.data.map { p ->
@@ -35,6 +39,8 @@ class Settings(private val context: Context) {
             individualAlertsEnabled = p[K.individual] ?: true,
             lastContactsSyncAt = p[K.lastSync] ?: 0L,
             onboardingDone = p[K.onboarding] ?: false,
+            lastReminderRunAt = p[K.lastReminderRun] ?: 0L,
+            lastScanRunAt = p[K.lastScanRun] ?: 0L,
         )
     }
 
@@ -42,5 +48,7 @@ class Settings(private val context: Context) {
     suspend fun setRoundupEnabled(v: Boolean) = context.store.edit { it[K.roundupEnabled] = v }
     suspend fun setIndividualAlerts(v: Boolean) = context.store.edit { it[K.individual] = v }
     suspend fun setLastSync(t: Long) = context.store.edit { it[K.lastSync] = t }
+    suspend fun markReminderRun(t: Long) = context.store.edit { it[K.lastReminderRun] = t }
+    suspend fun markScanRun(t: Long) = context.store.edit { it[K.lastScanRun] = t }
     suspend fun setOnboardingDone() = context.store.edit { it[K.onboarding] = true }
 }

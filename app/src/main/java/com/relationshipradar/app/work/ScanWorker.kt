@@ -17,6 +17,7 @@ class ScanWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
     override suspend fun doWork(): Result {
         val app = RadarApp.from(applicationContext)
         app.connectors.runAll()
+        app.settings.markScanRun(System.currentTimeMillis())
         return Result.success()
     }
 }

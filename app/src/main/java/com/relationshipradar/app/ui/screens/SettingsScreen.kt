@@ -28,14 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.relationshipradar.app.shizuku.ShizukuBridge
 import com.relationshipradar.app.ui.Format
 import com.relationshipradar.app.ui.RadarViewModel
 import com.relationshipradar.app.ui.SectionHeader
 import com.relationshipradar.app.work.Notifications
 
 @Composable
-fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit, onOpenConnectors: () -> Unit, onOpenWho: () -> Unit) {
+fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit, onOpenConnectors: () -> Unit, onOpenWho: () -> Unit, onOpenHealth: () -> Unit) {
     val pendingCount by vm.pendingIdentities.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     val s by vm.appSettings.collectAsStateWithLifecycle()
@@ -43,7 +42,6 @@ fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit, onOpenConne
     var syncMsg by remember { mutableStateOf<String?>(null) }
     var contactsGranted by remember { mutableStateOf(vm.contacts.hasPermission()) }
     var notifGranted by remember { mutableStateOf(Notifications.canPost(ctx)) }
-    var shizuku by remember { mutableStateOf(ShizukuBridge.status()) }
 
     val contactsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         contactsGranted = ok
@@ -97,22 +95,8 @@ fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit, onOpenConne
         item { SectionHeader("Categories") }
         item { ListItem(headlineContent = { Text("Edit categories and default timers") }, modifier = Modifier.clickable(onClick = onOpenCategories)) }
 
-        item { SectionHeader("Shizuku") }
-        item {
-            Column(Modifier.padding(horizontal = 16.dp)) {
-                val label = when (shizuku) {
-                    ShizukuBridge.Status.NOT_INSTALLED -> "Not installed — deeper Android access (call log, background reliability) arrives in Phase 3."
-                    ShizukuBridge.Status.NOT_RUNNING -> "Installed but not running. Start it from the Shizuku app."
-                    ShizukuBridge.Status.PERMISSION_NEEDED -> "Running. Tap to grant RelationshipRadar access."
-                    ShizukuBridge.Status.READY -> "Connected ✓"
-                }
-                Text(label, style = MaterialTheme.typography.bodyMedium)
-                if (shizuku == ShizukuBridge.Status.PERMISSION_NEEDED) {
-                    Button(onClick = { ShizukuBridge.requestPermission(); shizuku = ShizukuBridge.status() }, Modifier.padding(top = 8.dp)) { Text("Grant Shizuku access") }
-                }
-                TextButton(onClick = { shizuku = ShizukuBridge.status() }) { Text("Re-check") }
-            }
-        }
+        item { SectionHeader("Background health & Shizuku") }
+        item { ListItem(headlineContent = { Text("Is the radar actually running?") }, supportingContent = { Text("Battery, standby, permissions, Shizuku one-tap hardening") }, modifier = Modifier.clickable(onClick = onOpenHealth)) }
 
         item { SectionHeader("Archived · ${archived.size}") }
         if (archived.isEmpty()) item { Text("Nobody archived.", Modifier.padding(16.dp), style = MaterialTheme.typography.bodySmall) }

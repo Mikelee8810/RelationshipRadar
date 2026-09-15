@@ -11,6 +11,8 @@ import com.relationshipradar.app.data.db.PendingIdentity
 import com.relationshipradar.app.data.db.Person
 import com.relationshipradar.app.engine.PersonRadar
 import com.relationshipradar.app.engine.RadarStatus
+import com.relationshipradar.app.shizuku.ShellCommands
+import com.relationshipradar.app.shizuku.ShizukuBridge
 import com.relationshipradar.app.work.ReminderScheduler
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -88,6 +90,22 @@ class RadarViewModel(app: Application) : AndroidViewModel(app) {
     fun resolvePending(p: PendingIdentity, personId: Long) = viewModelScope.launch { repo.resolvePendingIdentity(p, personId) }
     fun resolvePendingAsNew(p: PendingIdentity, name: String) = viewModelScope.launch { repo.resolvePendingAsNewPerson(p, name) }
     fun ignorePending(p: PendingIdentity) = viewModelScope.launch { repo.ignorePendingIdentity(p) }
+
+    fun health(): com.relationshipradar.app.work.Health.Report {
+        val s = appSettings.value
+        return com.relationshipradar.app.work.Health.check(getApplication(), s.lastReminderRunAt, s.lastScanRunAt)
+    }
+
+    /** Runs allow-listed Shizuku commands; reports one line per command. */
+    fun runShizuku(commands: List<ShellCommands.Command>, onDone: (List<String>) -> Unit) = viewModelScope.launch {
+        val lines = commands.map { c ->
+            when (val r = ShizukuBridge.run(c)) {
+                is ShizukuBridge.Outcome.Ok -> "✓ ${c.label}"
+                is ShizukuBridge.Outcome.Err -> "✗ ${c.label}: ${r.text.take(80)}"
+            }
+        }
+        onDone(lines)
+    }
 
     fun finishOnboarding() = viewModelScope.launch { settings.setOnboardingDone() }
 }
