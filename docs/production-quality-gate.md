@@ -140,7 +140,7 @@ Each critical row needs evidence such as a test result, screenshot, benchmark, d
 - no `androidTest` source set is currently checked in
 - no Compose UI / end-to-end test suite is currently checked in
 - no screenshot/golden test suite is currently checked in
-- no GitHub Actions CI workflow is currently checked in
+- minimum GitHub Actions CI now exists for debug build, unit tests, and lint; instrumented/UI, screenshot, and release-mode checks are still missing
 - release build currently has `isMinifyEnabled = false`
 - backup/export/recovery behavior is not documented as a product flow
 
