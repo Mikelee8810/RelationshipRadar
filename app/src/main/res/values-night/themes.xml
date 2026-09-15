@@ -1,11 +1,11 @@
 <resources>
     <style name="Theme.RelationshipRadar" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@android:color/system_neutral1_10</item>
+        <item name="android:windowBackground">@android:color/system_neutral1_900</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowSplashScreenBackground">@android:color/system_neutral1_10</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowSplashScreenBackground">@android:color/system_neutral1_900</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
-        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/system_accent1_100</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/system_accent1_700</item>
     </style>
 </resources>

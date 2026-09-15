@@ -1,33 +1,56 @@
-# Design System
+# Design System — "native expressive"
 
-One small layer of primitives in `ui/Components.kt`; screens compose them and never redraw their own.
+The app should look like it shipped with the phone. Material 3 Expressive, colour from the user's wallpaper, one geometric sans at expressive sizes, large collapsing titles, spring motion, and Material's shape language for people. No metaphor, no decoration.
 
-## Tokens (`ui/theme/Theme.kt`)
+## Foundations
 
-| Token | Value | Used for |
+| Layer | Choice | Where |
 |---|---|---|
-| `Radar.sp1..sp4` | 4 / 8 / 16 / 32 dp | All spacing |
-| `Radar.dotSm/Md/Lg` | 10 / 12 / 14 dp | Signal dots |
-| `Radar.fabClearance` | 96 dp | Bottom padding under the FAB |
-| `StatusColors.good / dueSoon / overdue / veryOverdue / quiet` | fixed, not dynamic | The traffic light. Meaning must never shift with wallpaper. |
+| Theme | `MaterialExpressiveTheme` + `MotionScheme.expressive()` | `ui/theme/Theme.kt` |
+| Colour | `dynamicLight/DarkColorScheme` (Material You); `expressiveLightColorScheme` fallback | same |
+| Type | Manrope variable (Google-Sans-class geometric); display sizes with tight tracking | same |
+| Shapes | Material default expressive shapes; containers `extraLarge` (28 dp) | same |
+| Splash / icon | Adaptive + monochrome; system accent colours; splash uses the icon | `res/values*/themes.xml`, `res/drawable/ic_launcher_foreground.xml` |
 
-`StatusColors.of(RadarStatus)` and `StatusColors.of(Health.Level)` map both signal types onto the same three meanings: fine / look at this / broken. The widget uses the same values.
+## Status = scheme roles (re-tints with wallpaper)
 
-## Primitives
+| Status | Container | Accent |
+|---|---|---|
+| On track | `primaryContainer` | `primary` |
+| Due soon | `tertiaryContainer` | `tertiary` |
+| Overdue | `errorContainer` | `error` |
+| Way overdue | `error` | `error` |
+| No reminders / paused / snoozed | `surfaceContainerHighest` | `outline` |
 
-| Component | Rule |
+Labels: On track · Due soon · Overdue · Way overdue · No reminders · Paused · Snoozed.
+
+## People are shapes
+
+`Avatar(id, name, status)` — each person gets a stable `MaterialShapes` form by id (Cookie12, Clover8, SoftBurst, Sunny, Cookie9, Flower, Puffy, Cookie7) and it **morphs toward `Cookie4Sided`** as they go overdue. Colour and shape both carry the status; the morph is spring-animated. Same component at 40 / 56 / 88 / 112 dp.
+
+## Components (one of each)
+
+| Component | Use |
 |---|---|
-| `SignalDot` / `StatusDot` / `HealthDot` | The only dot. Never draw a circle in a screen. |
-| `StatusChip` | Dot + label. Used wherever a status is named in text. |
-| `Avatar` | Initials tinted by status. Lists scan by colour before they're read. |
-| `ToggleRow` | Title + subtitle + switch. Every on/off setting. |
-| `SectionHeader` | Uppercase label. Every grouped list. |
-| `EmptyState` | Title + one sentence. Every list that can be empty. |
-| `Hint` | Small muted explanation under a control. |
+| `LargeTopAppBar` (exitUntilCollapsed) | Every top-level and utility screen |
+| `ShortNavigationBar` | Bottom tabs: Circle · New people · Settings |
+| `MediumExtendedFloatingActionButton` | The one primary action: "I saw someone" |
+| Connected `ToggleButton` group | Filters on the Circle |
+| Connected `Button` + `FilledTonalButton` group | Person actions: Log · Snooze · Pause |
+| `CircularWavyProgressIndicator` | Interval used, around the person's avatar |
+| `Sheet` = `Card(surfaceContainer, extraLarge)` | Every grouped setting |
+| `ToggleRow` / `LinkRow` = `ListItem` | Rows inside a Sheet |
+| `Celebrate` | After logging: Cookie4 → Sunny bloom with a Confirm haptic |
+
+## Motion rules
+
+- Expressive motion scheme everywhere (springs, slight overshoot).
+- Lists use `animateItem()`; the hero count uses `AnimatedContent` slide+fade.
+- Onboarding page 1 keeps morphing between five expressive shapes; pages slide.
+- Motion explains state (avatar morph, count change, bloom on log). Nothing animates idly except the onboarding shape.
 
 ## Content rules
 
-- Names: single line, ellipsis. Avatar handles long/odd names (`?` fallback).
+- Sentence case, no exclamation marks, contractions OK.
 - Every permission ask says what is read and what is never read.
 - Every empty state says what will put something there.
-- Colours: Material You dynamic for chrome; status colours fixed.

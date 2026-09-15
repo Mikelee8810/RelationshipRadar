@@ -28,14 +28,12 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
 import com.relationshipradar.app.MainActivity
 import com.relationshipradar.app.RadarApp
 import com.relationshipradar.app.engine.PersonRadar
 import com.relationshipradar.app.engine.RadarStatus
 import com.relationshipradar.app.engine.ReminderEngine.needsAttention
 import com.relationshipradar.app.ui.Format
-import com.relationshipradar.app.ui.theme.StatusColors
 
 /**
  * Home-screen glance: who needs a nudge, worst first. Tap a row → that person.
@@ -60,13 +58,13 @@ class RadarWidget : GlanceAppWidget() {
                 GlanceModifier.fillMaxWidth().clickable(actionStartActivity(Intent(Intent.ACTION_VIEW).setClass(LocalCtx, MainActivity::class.java).putExtra("openLog", true))),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Radar", style = TextStyle(fontWeight = FontWeight.Bold, color = GlanceTheme.colors.onSurface))
+                Text("Circle", style = TextStyle(fontWeight = FontWeight.Bold, color = GlanceTheme.colors.onSurface))
                 Spacer(GlanceModifier.defaultWeight())
                 Text("+ I saw someone", style = TextStyle(color = GlanceTheme.colors.primary))
             }
             Spacer(GlanceModifier.height(8.dp))
             if (radar.isEmpty()) {
-                Text("All caught up ✓", style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant))
+                Text("All good", style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant))
             } else {
                 radar.take(5).forEach { r ->
                     Row(
@@ -74,7 +72,7 @@ class RadarWidget : GlanceAppWidget() {
                             .clickable(actionStartActivity(Intent(Intent.ACTION_VIEW).setClass(LocalCtx, MainActivity::class.java).putExtra("personId", r.person.id))),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Box(GlanceModifier.size(10.dp).background(ColorProvider(StatusColors.of(r.status))).cornerRadius(5.dp)) {}
+                        Box(GlanceModifier.size(10.dp).background(when (r.status) { RadarStatus.DUE_SOON -> GlanceTheme.colors.tertiary; RadarStatus.OVERDUE, RadarStatus.VERY_OVERDUE -> GlanceTheme.colors.error; else -> GlanceTheme.colors.primary }).cornerRadius(5.dp)) {}
                         Spacer(GlanceModifier.width(8.dp))
                         Text(r.person.displayName, style = TextStyle(color = GlanceTheme.colors.onSurface), maxLines = 1, modifier = GlanceModifier.defaultWeight())
                         Text(Format.ago(r.lastEffortAt), style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant))

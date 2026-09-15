@@ -35,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.relationshipradar.app.data.db.InteractionType
 import com.relationshipradar.app.ui.Format
 import com.relationshipradar.app.ui.RadarViewModel
-import com.relationshipradar.app.ui.StatusDot
 import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 
@@ -70,11 +69,12 @@ fun QuickLogScreen(vm: RadarViewModel, preselectedPersonId: Long?, onDone: () ->
     var customDate by rememberSaveable { mutableStateOf<Long?>(null) }
     var note by rememberSaveable { mutableStateOf("") }
     var showPicker by remember { mutableStateOf(false) }
+    var celebrating by remember { mutableStateOf(false) }
 
     val selected = radar.firstOrNull { it.person.id == personId }
 
-    Column(Modifier.padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Who?", style = MaterialTheme.typography.titleMedium)
+    Column(Modifier.padding(horizontal = 24.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("Who?", style = MaterialTheme.typography.titleLarge)
         if (selected == null) {
             OutlinedTextField(query, { query = it }, label = { Text("Search people") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             val matches = radar.filter { query.isBlank() || it.person.displayName.contains(query, ignoreCase = true) }.take(8)
@@ -86,22 +86,22 @@ fun QuickLogScreen(vm: RadarViewModel, preselectedPersonId: Long?, onDone: () ->
                     ListItem(
                         headlineContent = { Text(r.person.displayName) },
                         supportingContent = { Text("Last effort " + Format.ago(r.lastEffortAt).lowercase()) },
-                        leadingContent = { StatusDot(r.status) },
+                        leadingContent = { com.relationshipradar.app.ui.Avatar(r.person.id, r.person.displayName, r.status, 40) },
                         modifier = Modifier.fillMaxWidth().clickable { personId = r.person.id },
                     )
                 }
             }
         } else {
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                Text(selected.person.displayName, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                Text(selected.person.displayName, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
                 if (preselectedPersonId == null) TextButton(onClick = { personId = null }) { Text("Change") }
             }
         }
 
-        Text("What?", style = MaterialTheme.typography.titleMedium)
+        Text("What?", style = MaterialTheme.typography.titleLarge)
         FlowChips(quickTypes.map { it.second }, quickTypes.indexOfFirst { it.first == type }) { type = quickTypes[it].first }
 
-        Text("When?", style = MaterialTheme.typography.titleMedium)
+        Text("When?", style = MaterialTheme.typography.titleLarge)
         FlowChips(When.entries.map { it.label }, whenChoice.ordinal) {
             whenChoice = When.entries[it]
             if (whenChoice == When.PICK) showPicker = true
@@ -114,17 +114,19 @@ fun QuickLogScreen(vm: RadarViewModel, preselectedPersonId: Long?, onDone: () ->
         val canSave = selected != null && (whenChoice != When.PICK || customDate != null)
         Button(
             enabled = canSave,
-            modifier = Modifier.fillMaxWidth(),
             onClick = {
                 val ts = when (whenChoice) {
                     When.PICK -> customDate!!
                     else -> System.currentTimeMillis() - TimeUnit.DAYS.toMillis(whenChoice.daysAgo!!)
                 }
                 vm.logManual(selected!!.person.id, type, ts, whenChoice.approx, note.trim())
-                onDone()
+                celebrating = true
             },
-        ) { Text("Log it") }
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+        ) { Text("Log it", style = MaterialTheme.typography.labelLarge) }
     }
+
+    if (celebrating) com.relationshipradar.app.ui.Celebrate(onDone)
 
     if (showPicker) {
         val state = rememberDatePickerState(initialSelectedDateMillis = customDate ?: System.currentTimeMillis())
@@ -149,7 +151,7 @@ fun QuickLogScreen(vm: RadarViewModel, preselectedPersonId: Long?, onDone: () ->
 fun FlowChips(labels: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
     androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         labels.forEachIndexed { i, l ->
-            FilterChip(selected = i == selectedIndex, onClick = { onSelect(i) }, label = { Text(l) })
+            FilterChip(selected = i == selectedIndex, onClick = { onSelect(i) }, label = { Text(l) }, shape = androidx.compose.foundation.shape.RoundedCornerShape(50))
         }
     }
 }

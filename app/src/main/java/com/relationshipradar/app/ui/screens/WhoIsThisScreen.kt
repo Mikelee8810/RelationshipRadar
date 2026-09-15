@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -29,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.relationshipradar.app.data.db.IdentifierType
 import com.relationshipradar.app.data.db.PendingIdentity
 import com.relationshipradar.app.ui.EmptyState
+import com.relationshipradar.app.ui.Sheet
 import com.relationshipradar.app.ui.Format
 import com.relationshipradar.app.ui.RadarViewModel
 
@@ -50,9 +50,9 @@ fun WhoIsThisScreen(vm: RadarViewModel) {
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         items(pending, key = { it.id }) { p ->
             val suggested = radar.firstOrNull { it.person.id == p.suggestedPersonId }
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(display(p), style = MaterialTheme.typography.titleMedium)
+            Sheet(padding = 16) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(display(p), style = MaterialTheme.typography.headlineSmall)
                     Text("${p.source} · seen ${p.seenCount}× · last ${Format.ago(p.lastSeenAt).lowercase()}", style = MaterialTheme.typography.bodySmall)
                     if (suggested != null) {
                         Button(onClick = { vm.resolvePending(p, suggested.person.id) }, Modifier.fillMaxWidth()) { Text("This is ${suggested.person.displayName}") }

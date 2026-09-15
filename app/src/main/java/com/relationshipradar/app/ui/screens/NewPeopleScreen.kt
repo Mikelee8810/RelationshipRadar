@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -17,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.relationshipradar.app.ui.EmptyState
+import com.relationshipradar.app.ui.Hint
+import com.relationshipradar.app.ui.Sheet
 import com.relationshipradar.app.ui.RadarViewModel
 
 /** "What is this person to you?" — asked once here, one soft re-ask, then we stop. */
@@ -31,10 +32,10 @@ fun NewPeopleScreen(vm: RadarViewModel) {
     }
     LazyColumn(contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         items(people, key = { it.person.id }) { pwc ->
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(pwc.person.displayName, style = MaterialTheme.typography.titleMedium)
-                    Text("What is this person to you?", style = MaterialTheme.typography.bodySmall)
+            Sheet(padding = 16) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(pwc.person.displayName, style = MaterialTheme.typography.headlineSmall)
+                    Hint("What is this person to you?")
                     FlowChips(categories.map { it.name }, -1) { i -> vm.setCategory(pwc.person.id, categories[i].id) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { vm.updatePerson(pwc.person.copy(categorizationPromptCount = 2)) }) { Text("Track only") }

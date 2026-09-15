@@ -29,6 +29,9 @@ import com.relationshipradar.app.connectors.RadarNotificationListener
 import com.relationshipradar.app.ui.Format
 import com.relationshipradar.app.ui.RadarViewModel
 import com.relationshipradar.app.ui.SectionHeader
+import com.relationshipradar.app.ui.Hint
+import com.relationshipradar.app.ui.Sheet
+import com.relationshipradar.app.ui.theme.Radar
 import com.relationshipradar.app.work.ScanScheduler
 
 /** Each source: what it reads (specific, per the privacy rule), permission state, on/off, last run. */
@@ -52,8 +55,9 @@ fun ConnectorsScreen(vm: RadarViewModel) {
     LazyColumn {
         item {
             Text(
-                "The radar only keeps who, which app, when, and whether you reached out. It never stores what was said.",
-                Modifier.padding(16.dp), style = MaterialTheme.typography.bodyMedium,
+                "It keeps who, which app, when, and whether you reached out. Never what was said.",
+                Modifier.padding(horizontal = Radar.sp4.dp, vertical = Radar.sp2.dp),
+                style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
@@ -95,7 +99,7 @@ fun ConnectorsScreen(vm: RadarViewModel) {
                     style = MaterialTheme.typography.bodySmall,
                 )
                 if (!listenerOn) {
-                    Text("Android needs you to flip a switch for RelationshipRadar in the next screen.", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
+                    Text("Android needs you to flip a switch for Relationship Radar in the next screen.", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
                     Button(onClick = { ctx.startActivity(Intent(SysSettings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }, Modifier.padding(top = 8.dp)) { Text("Open notification access") }
                     TextButton(onClick = { listenerOn = RadarNotificationListener.isEnabled(ctx) }) { Text("I turned it on — re-check") }
                 } else {
@@ -122,8 +126,8 @@ fun ConnectorsScreen(vm: RadarViewModel) {
 
 @Composable
 private fun SourceCard(what: String, granted: Boolean, enabled: Boolean, last: com.relationshipradar.app.data.db.ConnectorCursor?, onToggle: (Boolean) -> Unit, onGrant: () -> Unit) {
-    Column(Modifier.padding(horizontal = 16.dp)) {
-        Text(what, style = MaterialTheme.typography.bodySmall)
+    Sheet(Modifier.padding(horizontal = Radar.sp3.dp), padding = Radar.sp3) {
+        Hint(what)
         if (!granted) {
             Button(onClick = onGrant, Modifier.padding(top = 8.dp)) { Text("Allow access") }
         } else {

@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,6 +32,10 @@ import com.relationshipradar.app.ui.Format
 import com.relationshipradar.app.ui.RadarViewModel
 import com.relationshipradar.app.ui.SectionHeader
 import com.relationshipradar.app.ui.ToggleRow
+import com.relationshipradar.app.ui.Sheet
+import com.relationshipradar.app.ui.Hint
+import com.relationshipradar.app.ui.LinkRow
+import com.relationshipradar.app.ui.theme.Radar
 import com.relationshipradar.app.work.Notifications
 
 @Composable
@@ -54,8 +59,8 @@ fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit, onOpenConne
     LazyColumn {
         item { SectionHeader("Contacts") }
         item {
-            Column(Modifier.padding(horizontal = 16.dp)) {
-                Text("Every saved contact becomes a tracked person. Reminders stay off until you turn them on.", style = MaterialTheme.typography.bodySmall)
+            Sheet(Modifier.padding(horizontal = Radar.sp3.dp), padding = Radar.sp3) {
+                Hint("Every saved contact joins the circle. Reminders stay off until you turn them on.")
                 if (contactsGranted) {
                     Button(onClick = { vm.syncContacts { syncMsg = it } }, Modifier.padding(top = 8.dp)) { Text("Import / refresh contacts") }
                     if (s.lastContactsSyncAt > 0) Text("Last import: " + Format.dateTime(s.lastContactsSyncAt), style = MaterialTheme.typography.bodySmall)
@@ -68,35 +73,33 @@ fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit, onOpenConne
         }
 
         item { SectionHeader("Sources") }
-        item { ListItem(headlineContent = { Text("Calls, texts, and chat apps") }, supportingContent = { Text("What the radar watches and why") }, modifier = Modifier.clickable(onClick = onOpenConnectors)) }
         item {
-            ListItem(
-                headlineContent = { Text("Who is this?") },
-                supportingContent = { Text(if (pendingCount.isEmpty()) "Nothing to sort out" else "${pendingCount.size} unmatched numbers or chats") },
-                modifier = Modifier.clickable(onClick = onOpenWho),
-            )
+            Sheet(Modifier.padding(horizontal = Radar.sp3.dp)) {
+                LinkRow("Calls, texts, calendar, chat apps", "What the radar watches and why", onOpenConnectors)
+                LinkRow("Who is this?", if (pendingCount.isEmpty()) "Nothing to sort out" else "${pendingCount.size} unmatched numbers or chats", onOpenWho)
+            }
         }
 
         item { SectionHeader("Notifications") }
         item {
-            Column(Modifier.padding(horizontal = 16.dp)) {
+            Sheet(Modifier.padding(horizontal = Radar.sp3.dp), padding = Radar.sp2) {
                 if (!notifGranted) {
-                    Text("Reminders can't reach you until notifications are allowed.", style = MaterialTheme.typography.bodySmall)
+                    Hint("Reminders can't reach you until notifications are allowed.")
                     Button(onClick = { notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }, Modifier.padding(vertical = 8.dp)) { Text("Allow notifications") }
                 }
                 ToggleRow("Daily roundup", "One quiet summary of everyone who is due", s.roundupEnabled, vm::setRoundupEnabled)
                 ToggleRow("Individual alerts", "Separate alert for high-priority people", s.individualAlertsEnabled, vm::setIndividualAlerts)
                 Text("Roundup time: ${s.roundupHour}:00", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
                 Slider(value = s.roundupHour.toFloat(), onValueChange = { vm.setRoundupHour(it.toInt()) }, valueRange = 6f..22f, steps = 15)
-                Text("Backup nudges: day 0, 2, 4, 6 after due — then the app goes quiet and just shows the colour.", style = MaterialTheme.typography.bodySmall)
+                Hint("Backup nudges: day 0, 2, 4, 6 after due — then it goes quiet and just shows the colour.")
             }
         }
 
         item { SectionHeader("Categories") }
-        item { ListItem(headlineContent = { Text("Edit categories and default timers") }, modifier = Modifier.clickable(onClick = onOpenCategories)) }
+        item { Sheet(Modifier.padding(horizontal = Radar.sp3.dp)) { LinkRow("Categories and default timers", "Best friend every 7 days, friend every 30…", onOpenCategories) } }
 
         item { SectionHeader("Background health & Shizuku") }
-        item { ListItem(headlineContent = { Text("Is the radar actually running?") }, supportingContent = { Text("Battery, standby, permissions, Shizuku one-tap hardening") }, modifier = Modifier.clickable(onClick = onOpenHealth)) }
+        item { Sheet(Modifier.padding(horizontal = Radar.sp3.dp)) { LinkRow("Is the radar actually running?", "Battery, standby, permissions, Shizuku one-tap hardening", onOpenHealth) } }
 
         item { SectionHeader("Archived · ${archived.size}") }
         if (archived.isEmpty()) item { Text("Nobody archived.", Modifier.padding(16.dp), style = MaterialTheme.typography.bodySmall) }

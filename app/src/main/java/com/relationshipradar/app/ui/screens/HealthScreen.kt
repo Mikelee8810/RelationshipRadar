@@ -68,7 +68,7 @@ fun HealthScreen(vm: RadarViewModel) {
                 HealthDot(worst)
                 Text(
                     when (worst) { Health.Level.OK -> "Everything's running"; Health.Level.ATTENTION -> "Mostly fine — a few things to tighten"; Health.Level.OFF -> "Something important is off" },
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineMedium,
                 )
             }
         }

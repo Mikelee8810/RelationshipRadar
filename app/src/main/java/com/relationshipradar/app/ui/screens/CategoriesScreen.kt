@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,7 +34,7 @@ fun CategoriesScreen(vm: RadarViewModel, showAdd: Boolean, onAddConsumed: () -> 
     LazyColumn {
         items(categories, key = { it.id }) { c ->
             ListItem(
-                headlineContent = { Text(c.name) },
+                headlineContent = { Text(c.name, style = MaterialTheme.typography.titleLarge) },
                 supportingContent = {
                     Text(
                         (c.defaultIntervalDays?.let { "Every $it days" } ?: "Custom per person") +
