@@ -7,6 +7,7 @@ import com.relationshipradar.app.RadarApp
 import com.relationshipradar.app.data.db.Category
 import com.relationshipradar.app.data.db.Interaction
 import com.relationshipradar.app.data.db.InteractionType
+import com.relationshipradar.app.data.db.PendingIdentity
 import com.relationshipradar.app.data.db.Person
 import com.relationshipradar.app.engine.PersonRadar
 import com.relationshipradar.app.engine.RadarStatus
@@ -34,6 +35,8 @@ class RadarViewModel(app: Application) : AndroidViewModel(app) {
     val uncategorized = repo.observeUncategorized().state(emptyList())
     val archived = repo.observeArchived().state(emptyList())
     val appSettings = settings.flow.state(com.relationshipradar.app.data.repo.AppSettings())
+    val cursors = repo.observeCursors().state(emptyList())
+    val pendingIdentities = repo.observePendingIdentities().state(emptyList())
 
     fun person(id: Long) = repo.observePerson(id)
     fun interactions(id: Long) = repo.observeInteractions(id)
@@ -72,6 +75,20 @@ class RadarViewModel(app: Application) : AndroidViewModel(app) {
     fun setRoundupHour(h: Int) = viewModelScope.launch { settings.setRoundupHour(h); ReminderScheduler.ensureScheduled(getApplication(), h) }
     fun setRoundupEnabled(v: Boolean) = viewModelScope.launch { settings.setRoundupEnabled(v) }
     fun setIndividualAlerts(v: Boolean) = viewModelScope.launch { settings.setIndividualAlerts(v) }
+    fun hasPermission(perm: String) =
+        androidx.core.content.ContextCompat.checkSelfPermission(getApplication(), perm) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+    fun setConnectorEnabled(id: String, enabled: Boolean) = viewModelScope.launch { repo.setConnectorEnabled(id, enabled) }
+
+    fun scanNow(onDone: (String) -> Unit) = viewModelScope.launch {
+        val results = radarApp.connectors.runAll()
+        onDone(results.joinToString(" · ") { r -> "${r.connectorId}: ${r.skipped ?: "${r.imported} new"}" })
+    }
+
+    fun resolvePending(p: PendingIdentity, personId: Long) = viewModelScope.launch { repo.resolvePendingIdentity(p, personId) }
+    fun resolvePendingAsNew(p: PendingIdentity, name: String) = viewModelScope.launch { repo.resolvePendingAsNewPerson(p, name) }
+    fun ignorePending(p: PendingIdentity) = viewModelScope.launch { repo.ignorePendingIdentity(p) }
+
     fun finishOnboarding() = viewModelScope.launch { settings.setOnboardingDone() }
 }
 

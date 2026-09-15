@@ -124,3 +124,33 @@ data class ReminderState(
     val notificationsSent: Int = 0,
     val lastNotifiedAt: Long? = null,
 )
+
+/** Per-connector "scanned up to here" marker so re-scans are cheap and idempotent. */
+@Entity(tableName = "connector_cursors")
+data class ConnectorCursor(
+    @PrimaryKey val connectorId: String,
+    val lastScannedAt: Long,
+    val lastRunAt: Long,
+    val lastRunCount: Int = 0,
+    val enabled: Boolean = true,
+)
+
+/**
+ * An identity a connector saw but could not match with confidence (e.g. a WhatsApp chat
+ * called "Jess"). We ask the user once, remember the answer, and never silently merge.
+ */
+@Entity(tableName = "pending_identities", indices = [Index(value = ["type", "normalizedValue"], unique = true)])
+data class PendingIdentity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val type: IdentifierType,
+    val rawValue: String,
+    val normalizedValue: String,
+    val source: String,
+    val firstSeenAt: Long,
+    val lastSeenAt: Long,
+    val seenCount: Int = 1,
+    /** Suggested match by name similarity, if any. */
+    val suggestedPersonId: Long? = null,
+    /** User said "not a person I track" — stop asking. */
+    val ignored: Boolean = false,
+)

@@ -145,3 +145,36 @@ interface ReminderStateDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(state: ReminderState)
 }
+
+@Dao
+interface ConnectorCursorDao {
+    @Query("SELECT * FROM connector_cursors WHERE connectorId = :id")
+    suspend fun get(id: String): ConnectorCursor?
+
+    @Query("SELECT * FROM connector_cursors")
+    fun observeAll(): Flow<List<ConnectorCursor>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(cursor: ConnectorCursor)
+
+    @Query("UPDATE connector_cursors SET enabled = :enabled WHERE connectorId = :id")
+    suspend fun setEnabled(id: String, enabled: Boolean)
+}
+
+@Dao
+interface PendingIdentityDao {
+    @Query("SELECT * FROM pending_identities WHERE ignored = 0 ORDER BY seenCount DESC, lastSeenAt DESC")
+    fun observeOpen(): Flow<List<PendingIdentity>>
+
+    @Query("SELECT * FROM pending_identities WHERE type = :type AND normalizedValue = :value")
+    suspend fun find(type: IdentifierType, value: String): PendingIdentity?
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(p: PendingIdentity): Long
+
+    @Update
+    suspend fun update(p: PendingIdentity)
+
+    @Delete
+    suspend fun delete(p: PendingIdentity)
+}

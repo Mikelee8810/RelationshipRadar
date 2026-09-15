@@ -3,6 +3,8 @@ package com.relationshipradar.app.data.repo
 import com.relationshipradar.app.data.db.AppDatabase
 import com.relationshipradar.app.data.db.BuiltInCategories
 import com.relationshipradar.app.data.db.Category
+import com.relationshipradar.app.data.db.ConnectorCursor
+import com.relationshipradar.app.data.db.PendingIdentity
 import com.relationshipradar.app.data.db.ContactIdentifier
 import com.relationshipradar.app.data.db.Direction
 import com.relationshipradar.app.data.db.IdentifierType
@@ -117,4 +119,48 @@ class Repository(private val db: AppDatabase) {
     suspend fun deleteCategory(c: Category) { if (!c.builtIn) categories.delete(c) }
 
     fun reminderStateDao() = db.reminderStateDao()
+
+    // ---- Connectors -----------------------------------------------------------------------
+
+    private val cursors = db.connectorCursorDao()
+    private val pending = db.pendingIdentityDao()
+
+    fun observeCursors() = cursors.observeAll()
+    suspend fun cursor(id: String) = cursors.get(id)
+    suspend fun saveCursor(c: ConnectorCursor) = cursors.upsert(c)
+    suspend fun setConnectorEnabled(id: String, enabled: Boolean) {
+        val c = cursors.get(id) ?: ConnectorCursor(id, 0L, 0L)
+        cursors.upsert(c.copy(enabled = enabled))
+    }
+
+    fun observePendingIdentities() = pending.observeOpen()
+
+    /** Called by connectors for an identity they couldn't match. Bumps seen count if already there. */
+    suspend fun notePendingIdentity(type: IdentifierType, raw: String, source: String, suggested: Long?, seenAt: Long) {
+        val norm = normalize(type, raw)
+        val existing = pending.find(type, norm)
+        if (existing == null) {
+            pending.insert(PendingIdentity(type = type, rawValue = raw, normalizedValue = norm, source = source, firstSeenAt = seenAt, lastSeenAt = seenAt, suggestedPersonId = suggested))
+        } else if (!existing.ignored) {
+            pending.update(existing.copy(lastSeenAt = maxOf(existing.lastSeenAt, seenAt), seenCount = existing.seenCount + 1, suggestedPersonId = existing.suggestedPersonId ?: suggested))
+        }
+    }
+
+    /** User answered: this identity belongs to [personId]. Remembered forever via the identifier table. */
+    suspend fun resolvePendingIdentity(p: PendingIdentity, personId: Long) {
+        addIdentifier(personId, p.type, p.rawValue, p.source)
+        pending.delete(p)
+    }
+
+    /** User answered: create a new person for this identity. */
+    suspend fun resolvePendingAsNewPerson(p: PendingIdentity, name: String): Long {
+        val id = createPerson(name)
+        resolvePendingIdentity(p, id)
+        return id
+    }
+
+    suspend fun ignorePendingIdentity(p: PendingIdentity) = pending.update(p.copy(ignored = true))
+
+    /** Loose name match used only to *suggest*, never to auto-merge. */
+    suspend fun suggestPersonByName(name: String): Person? = people.findByName(name.trim())
 }

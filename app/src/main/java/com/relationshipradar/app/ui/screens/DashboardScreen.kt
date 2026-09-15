@@ -37,7 +37,8 @@ import com.relationshipradar.app.ui.StatusDot
 private enum class Filter(val label: String) { ATTENTION("Needs attention"), REMINDERS("With reminders"), ALL("Everyone") }
 
 @Composable
-fun DashboardScreen(vm: RadarViewModel, onOpenPerson: (Long) -> Unit, onOpenNewPeople: () -> Unit) {
+fun DashboardScreen(vm: RadarViewModel, onOpenPerson: (Long) -> Unit, onOpenNewPeople: () -> Unit, onOpenWho: () -> Unit) {
+    val pending by vm.pendingIdentities.collectAsStateWithLifecycle()
     val radar by vm.radar.collectAsStateWithLifecycle()
     val uncategorized by vm.uncategorized.collectAsStateWithLifecycle()
     var filter by rememberSaveable { mutableStateOf(Filter.ATTENTION) }
@@ -66,6 +67,21 @@ fun DashboardScreen(vm: RadarViewModel, onOpenPerson: (Long) -> Unit, onOpenNewP
                         Text("Tell the radar who they are to you", style = MaterialTheme.typography.bodySmall)
                     }
                     TextButton(onClick = onOpenNewPeople) { Text("Sort") }
+                }
+            }
+        }
+
+        if (pending.isNotEmpty()) {
+            Card(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).clickable(onClick = onOpenWho),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+            ) {
+                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("${pending.size} unmatched ${if (pending.size == 1) "contact" else "contacts"}", style = MaterialTheme.typography.titleMedium)
+                        Text("A number or chat the radar couldn't place", style = MaterialTheme.typography.bodySmall)
+                    }
+                    TextButton(onClick = onOpenWho) { Text("Sort") }
                 }
             }
         }

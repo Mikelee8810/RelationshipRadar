@@ -35,7 +35,8 @@ import com.relationshipradar.app.ui.SectionHeader
 import com.relationshipradar.app.work.Notifications
 
 @Composable
-fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit) {
+fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit, onOpenConnectors: () -> Unit, onOpenWho: () -> Unit) {
+    val pendingCount by vm.pendingIdentities.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     val s by vm.appSettings.collectAsStateWithLifecycle()
     val archived by vm.archived.collectAsStateWithLifecycle()
@@ -66,6 +67,16 @@ fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit) {
                 }
                 syncMsg?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp)) }
             }
+        }
+
+        item { SectionHeader("Sources") }
+        item { ListItem(headlineContent = { Text("Calls, texts, and chat apps") }, supportingContent = { Text("What the radar watches and why") }, modifier = Modifier.clickable(onClick = onOpenConnectors)) }
+        item {
+            ListItem(
+                headlineContent = { Text("Who is this?") },
+                supportingContent = { Text(if (pendingCount.isEmpty()) "Nothing to sort out" else "${pendingCount.size} unmatched numbers or chats") },
+                modifier = Modifier.clickable(onClick = onOpenWho),
+            )
         }
 
         item { SectionHeader("Notifications") }
