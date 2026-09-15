@@ -65,13 +65,13 @@ object Health {
             Check("Call log access", if (granted(Manifest.permission.READ_CALL_LOG)) "Allowed" else "Not granted", if (granted(Manifest.permission.READ_CALL_LOG)) Level.OK else Level.OFF),
             Check("SMS access", if (granted(Manifest.permission.READ_SMS)) "Allowed" else "Not granted", if (granted(Manifest.permission.READ_SMS)) Level.OK else Level.OFF),
             Check(
-                "Shizuku", when (ShizukuBridge.status()) {
+                "Shizuku", when (ShizukuBridge.status(context)) {
                     ShizukuBridge.Status.READY -> "Connected"
                     ShizukuBridge.Status.PERMISSION_NEEDED -> "Running, needs permission"
                     ShizukuBridge.Status.NOT_RUNNING -> "Installed but not running"
                     ShizukuBridge.Status.NOT_INSTALLED -> "Not installed (optional booster)"
                 },
-                if (ShizukuBridge.status() == ShizukuBridge.Status.READY) Level.OK else Level.ATTENTION,
+                if (ShizukuBridge.status(context) == ShizukuBridge.Status.READY) Level.OK else Level.ATTENTION,
             ),
         )
         return Report(checks)

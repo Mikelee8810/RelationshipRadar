@@ -43,19 +43,19 @@ import com.relationshipradar.app.work.Health
 fun HealthScreen(vm: RadarViewModel) {
     val ctx = LocalContext.current
     var report by remember { mutableStateOf(vm.health()) }
-    var shizuku by remember { mutableStateOf(ShizukuBridge.status()) }
+    var shizuku by remember { mutableStateOf(ShizukuBridge.status(ctx)) }
     var log by remember { mutableStateOf<List<String>>(emptyList()) }
     var busy by remember { mutableStateOf(false) }
 
     // Re-measure whenever we come back from a Settings screen.
     val owner = LocalLifecycleOwner.current
     DisposableEffect(owner) {
-        val obs = LifecycleEventObserver { _, e -> if (e == Lifecycle.Event.ON_RESUME) { report = vm.health(); shizuku = ShizukuBridge.status() } }
+        val obs = LifecycleEventObserver { _, e -> if (e == Lifecycle.Event.ON_RESUME) { report = vm.health(); shizuku = ShizukuBridge.status(ctx) } }
         owner.lifecycle.addObserver(obs)
         onDispose { owner.lifecycle.removeObserver(obs) }
     }
 
-    fun refresh() { report = vm.health(); shizuku = ShizukuBridge.status() }
+    fun refresh() { report = vm.health(); shizuku = ShizukuBridge.status(ctx) }
     fun run(cmds: List<ShellCommands.Command>) {
         busy = true
         vm.runShizuku(cmds) { log = it; busy = false; refresh() }

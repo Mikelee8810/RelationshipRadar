@@ -1,6 +1,7 @@
 package com.relationshipradar.app.shizuku
 
 import android.content.ComponentName
+import android.content.Context
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.IBinder
@@ -18,6 +19,14 @@ object ShizukuBridge {
     const val REQUEST_CODE = 4242
 
     enum class Status { NOT_INSTALLED, NOT_RUNNING, PERMISSION_NEEDED, READY }
+
+    private const val SHIZUKU_PKG = "moe.shizuku.privileged.api"
+
+    fun isInstalled(context: Context): Boolean = try {
+        context.packageManager.getPackageInfo(SHIZUKU_PKG, 0); true
+    } catch (_: PackageManager.NameNotFoundException) { false }
+
+    fun status(context: Context): Status = if (!isInstalled(context)) Status.NOT_INSTALLED else status()
 
     fun status(): Status = try {
         if (!Shizuku.pingBinder()) Status.NOT_RUNNING
