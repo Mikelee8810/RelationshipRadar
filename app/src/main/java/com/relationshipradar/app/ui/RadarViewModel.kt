@@ -1,0 +1,78 @@
+package com.relationshipradar.app.ui
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.relationshipradar.app.RadarApp
+import com.relationshipradar.app.data.db.Category
+import com.relationshipradar.app.data.db.Interaction
+import com.relationshipradar.app.data.db.InteractionType
+import com.relationshipradar.app.data.db.Person
+import com.relationshipradar.app.engine.PersonRadar
+import com.relationshipradar.app.engine.RadarStatus
+import com.relationshipradar.app.work.ReminderScheduler
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+/** One view model for the whole app; screens are thin. */
+class RadarViewModel(app: Application) : AndroidViewModel(app) {
+    private val radarApp = RadarApp.from(app)
+    val repo = radarApp.repo
+    val settings = radarApp.settings
+    val contacts = radarApp.contacts
+
+    private fun <T> Flow<T>.state(initial: T): StateFlow<T> = stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initial)
+
+    val radar: StateFlow<List<PersonRadar>> = repo.observeRadar().map { list ->
+        list.sortedWith(compareByDescending<PersonRadar> { statusRank(it.status) }.thenBy { it.person.displayName.lowercase() })
+    }.state(emptyList())
+
+    val categories = repo.observeCategories().state(emptyList())
+    val uncategorized = repo.observeUncategorized().state(emptyList())
+    val archived = repo.observeArchived().state(emptyList())
+    val appSettings = settings.flow.state(com.relationshipradar.app.data.repo.AppSettings())
+
+    fun person(id: Long) = repo.observePerson(id)
+    fun interactions(id: Long) = repo.observeInteractions(id)
+    fun identifiers(id: Long) = repo.observeIdentifiers(id)
+
+    private fun statusRank(s: RadarStatus) = when (s) {
+        RadarStatus.VERY_OVERDUE -> 6; RadarStatus.OVERDUE -> 5; RadarStatus.DUE_SOON -> 4
+        RadarStatus.GOOD -> 3; RadarStatus.SNOOZED -> 2; RadarStatus.PAUSED -> 1; RadarStatus.TRACK_ONLY -> 0
+    }
+
+    fun logManual(personId: Long, type: InteractionType, timestamp: Long, approximate: Boolean, note: String) =
+        viewModelScope.launch { repo.logManual(personId, type, timestamp, approximate, note) }
+
+    fun createPerson(name: String, categoryId: Long?, onDone: (Long) -> Unit = {}) =
+        viewModelScope.launch { onDone(repo.createPerson(name, categoryId)) }
+
+    fun updatePerson(p: Person) = viewModelScope.launch { repo.updatePerson(p) }
+    fun setCategory(personId: Long, categoryId: Long?) = viewModelScope.launch { repo.setCategory(personId, categoryId) }
+    fun dismissPrompt(personId: Long) = viewModelScope.launch { repo.bumpPromptCount(personId) }
+    fun snooze(personId: Long, until: Long?) = viewModelScope.launch { repo.snooze(personId, until) }
+    fun pause(personId: Long, until: Long?) = viewModelScope.launch { repo.pause(personId, until) }
+    fun archive(personId: Long) = viewModelScope.launch { repo.archive(personId) }
+    fun restore(personId: Long) = viewModelScope.launch { repo.restore(personId) }
+    fun deleteInteraction(i: Interaction) = viewModelScope.launch { repo.deleteInteraction(i) }
+
+    fun addCategory(c: Category) = viewModelScope.launch { repo.addCategory(c) }
+    fun updateCategory(c: Category) = viewModelScope.launch { repo.updateCategory(c) }
+    fun deleteCategory(c: Category) = viewModelScope.launch { repo.deleteCategory(c) }
+
+    fun syncContacts(onDone: (String) -> Unit) = viewModelScope.launch {
+        val r = contacts.sync()
+        settings.setLastSync(System.currentTimeMillis())
+        onDone("Imported ${r.created} new, updated ${r.updated}, archived ${r.archived}")
+    }
+
+    fun setRoundupHour(h: Int) = viewModelScope.launch { settings.setRoundupHour(h); ReminderScheduler.ensureScheduled(getApplication(), h) }
+    fun setRoundupEnabled(v: Boolean) = viewModelScope.launch { settings.setRoundupEnabled(v) }
+    fun setIndividualAlerts(v: Boolean) = viewModelScope.launch { settings.setIndividualAlerts(v) }
+    fun finishOnboarding() = viewModelScope.launch { settings.setOnboardingDone() }
+}
+
+private typealias Flow<T> = kotlinx.coroutines.flow.Flow<T>
