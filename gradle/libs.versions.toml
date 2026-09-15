@@ -13,6 +13,7 @@ coreKtx = "1.18.0"
 coroutines = "1.10.2"
 shizuku = "13.1.5"
 junit = "4.13.2"
+glance = "1.2.0"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,6 +36,8 @@ coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutin
 shizuku-api = { group = "dev.rikka.shizuku", name = "api", version.ref = "shizuku" }
 shizuku-provider = { group = "dev.rikka.shizuku", name = "provider", version.ref = "shizuku" }
 
+glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 
 [plugins]

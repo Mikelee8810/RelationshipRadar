@@ -32,7 +32,7 @@ import com.relationshipradar.app.ui.Format
 import com.relationshipradar.app.ui.RadarViewModel
 import com.relationshipradar.app.ui.SectionHeader
 import com.relationshipradar.app.ui.StatusChip
-import com.relationshipradar.app.ui.StatusDot
+import com.relationshipradar.app.ui.Avatar
 
 private enum class Filter(val label: String) { ATTENTION("Needs attention"), REMINDERS("With reminders"), ALL("Everyone") }
 
@@ -94,7 +94,7 @@ fun DashboardScreen(vm: RadarViewModel, onOpenPerson: (Long) -> Unit, onOpenNewP
                 if (filter == Filter.ATTENTION) "Nobody needs a nudge right now." else "Turn on reminders for a person to see them here.",
             )
         } else {
-            LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
+            LazyColumn(contentPadding = PaddingValues(bottom = com.relationshipradar.app.ui.theme.Radar.fabClearance.dp)) {
                 val groups = shown.groupBy { it.status }
                 for (status in listOf(RadarStatus.VERY_OVERDUE, RadarStatus.OVERDUE, RadarStatus.DUE_SOON, RadarStatus.GOOD, RadarStatus.SNOOZED, RadarStatus.PAUSED, RadarStatus.TRACK_ONLY)) {
                     val list = groups[status] ?: continue
@@ -113,9 +113,9 @@ fun PersonRow(r: PersonRadar, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        StatusDot(r.status, 14)
+        Avatar(r.person.displayName, r.status)
         Column(Modifier.weight(1f)) {
-            Text(r.person.displayName, style = MaterialTheme.typography.bodyLarge)
+            Text(r.person.displayName, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             val sub = buildString {
                 append(r.category?.name ?: "No category")
                 r.intervalDays?.let { append(" · every $it d") }

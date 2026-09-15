@@ -16,8 +16,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val openPerson = intent?.getLongExtra("personId", -1L)?.takeIf { it > 0 }
+        val openLog = intent?.getBooleanExtra("openLog", false) == true
         setContent {
-            RadarTheme { RadarNavHost(vm, openPerson) }
+            RadarTheme { RadarNavHost(vm, openPerson, openLog) }
         }
     }
 }

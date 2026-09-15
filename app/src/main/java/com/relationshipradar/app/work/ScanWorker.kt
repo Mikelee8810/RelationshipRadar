@@ -18,6 +18,7 @@ class ScanWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         val app = RadarApp.from(applicationContext)
         app.connectors.runAll()
         app.settings.markScanRun(System.currentTimeMillis())
+        com.relationshipradar.app.widget.RadarWidget.refresh(applicationContext)
         return Result.success()
     }
 }

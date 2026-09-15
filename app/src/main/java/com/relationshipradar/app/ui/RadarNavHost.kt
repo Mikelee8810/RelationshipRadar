@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -39,6 +40,7 @@ import com.relationshipradar.app.ui.screens.HealthScreen
 import com.relationshipradar.app.ui.screens.WhoIsThisScreen
 import com.relationshipradar.app.ui.screens.DashboardScreen
 import com.relationshipradar.app.ui.screens.NewPeopleScreen
+import com.relationshipradar.app.ui.screens.OnboardingScreen
 import com.relationshipradar.app.ui.screens.PersonScreen
 import com.relationshipradar.app.ui.screens.QuickLogScreen
 import com.relationshipradar.app.ui.screens.SettingsScreen
@@ -59,14 +61,23 @@ object Routes {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RadarNavHost(vm: RadarViewModel, openPersonId: Long?) {
+fun RadarNavHost(vm: RadarViewModel, openPersonId: Long?, openLog: Boolean = false) {
     val nav = rememberNavController()
+    val settings by vm.appSettings.collectAsStateWithLifecycle()
+    var onboardingSeen by remember { mutableStateOf(false) }
+    if (!settings.onboardingDone && !onboardingSeen) {
+        OnboardingScreen(vm) { onboardingSeen = true }
+        return
+    }
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route ?: Routes.RADAR
     var showAddPerson by remember { mutableStateOf(false) }
     var showAddCategory by remember { mutableStateOf(false) }
 
-    LaunchedEffect(openPersonId) { openPersonId?.let { nav.navigate(Routes.person(it)) } }
+    LaunchedEffect(openPersonId, openLog) {
+        openPersonId?.let { nav.navigate(Routes.person(it)) }
+        if (openLog) nav.navigate(Routes.log())
+    }
 
     val isTop = route in listOf(Routes.RADAR, Routes.NEW_PEOPLE, Routes.SETTINGS)
     val title = when {

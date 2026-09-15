@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.coroutines.android)
     implementation(libs.shizuku.api)
     implementation(libs.shizuku.provider)
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
     debugImplementation(libs.compose.ui.tooling)
     testImplementation(libs.junit)
 }

@@ -39,6 +39,13 @@
             </intent-filter>
         </service>
 
+        <receiver android:name=".widget.RadarWidgetReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/radar_widget_info" />
+        </receiver>
+
         <receiver android:name=".connectors.BootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

@@ -11,6 +11,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.relationshipradar.app.engine.RadarStatus
+import com.relationshipradar.app.work.Health
+
+/** Semantic spacing/size tokens. Screens use these, never raw numbers. */
+object Radar {
+    const val sp1 = 4
+    const val sp2 = 8
+    const val sp3 = 16
+    const val sp4 = 32
+    const val dotSm = 10
+    const val dotMd = 12
+    const val dotLg = 14
+    /** Bottom padding so the FAB never covers the last row. */
+    const val fabClearance = 96
+}
 
 /** Status colours are fixed (not dynamic) so the traffic-light meaning never shifts. */
 object StatusColors {
@@ -26,6 +40,13 @@ object StatusColors {
         RadarStatus.OVERDUE -> overdue
         RadarStatus.VERY_OVERDUE -> veryOverdue
         RadarStatus.TRACK_ONLY, RadarStatus.PAUSED, RadarStatus.SNOOZED -> quiet
+    }
+
+    /** Health levels reuse the same three meanings: fine / look at this / broken. */
+    fun of(level: Health.Level): Color = when (level) {
+        Health.Level.OK -> good
+        Health.Level.ATTENTION -> dueSoon
+        Health.Level.OFF -> veryOverdue
     }
 
     fun label(status: RadarStatus): String = when (status) {

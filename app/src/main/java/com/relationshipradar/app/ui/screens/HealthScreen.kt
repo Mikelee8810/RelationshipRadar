@@ -3,17 +3,13 @@ package com.relationshipradar.app.ui.screens
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings as SysSettings
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -34,9 +30,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.relationshipradar.app.shizuku.ShellCommands
 import com.relationshipradar.app.shizuku.ShizukuBridge
+import com.relationshipradar.app.ui.HealthDot
 import com.relationshipradar.app.ui.RadarViewModel
 import com.relationshipradar.app.ui.SectionHeader
-import com.relationshipradar.app.ui.theme.StatusColors
 import com.relationshipradar.app.work.Health
 
 /**
@@ -69,7 +65,7 @@ fun HealthScreen(vm: RadarViewModel) {
         item {
             val worst = report.worst
             Row(Modifier.padding(16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Dot(worst)
+                HealthDot(worst)
                 Text(
                     when (worst) { Health.Level.OK -> "Everything's running"; Health.Level.ATTENTION -> "Mostly fine — a few things to tighten"; Health.Level.OFF -> "Something important is off" },
                     style = MaterialTheme.typography.titleLarge,
@@ -96,7 +92,7 @@ fun HealthScreen(vm: RadarViewModel) {
                         OutlinedButton(onClick = { run(listOf(ShellCommands.Command.ALLOW_NOTIFICATION_LISTENER)) }, modifier = Modifier.fillMaxWidth(), enabled = !busy) { Text("Enable chat-app listener") }
                         OutlinedButton(
                             enabled = !busy,
-                            onClick = { run(listOf(ShellCommands.Command.GRANT_CONTACTS, ShellCommands.Command.GRANT_CALL_LOG, ShellCommands.Command.GRANT_SMS, ShellCommands.Command.GRANT_NOTIFICATIONS)) },
+                            onClick = { run(listOf(ShellCommands.Command.GRANT_CONTACTS, ShellCommands.Command.GRANT_CALL_LOG, ShellCommands.Command.GRANT_SMS, ShellCommands.Command.GRANT_CALENDAR, ShellCommands.Command.GRANT_NOTIFICATIONS)) },
                             modifier = Modifier.fillMaxWidth(),
                         ) { Text("Grant all permissions") }
                         Text("Only these fixed commands can run, and only on this app. Nothing else.", style = MaterialTheme.typography.bodySmall)
@@ -110,7 +106,7 @@ fun HealthScreen(vm: RadarViewModel) {
         item { SectionHeader("Checks") }
         items(report.checks) { c ->
             ListItem(
-                leadingContent = { Dot(c.level) },
+                leadingContent = { HealthDot(c.level) },
                 headlineContent = { Text(c.title) },
                 supportingContent = { Text(c.detail + (c.fixHint?.takeIf { c.level != Health.Level.OK }?.let { "\n$it" } ?: "")) },
                 trailingContent = {
@@ -131,8 +127,3 @@ fun HealthScreen(vm: RadarViewModel) {
     }
 }
 
-@Composable
-private fun Dot(level: Health.Level) {
-    val color = when (level) { Health.Level.OK -> StatusColors.good; Health.Level.ATTENTION -> StatusColors.dueSoon; Health.Level.OFF -> StatusColors.veryOverdue }
-    Box(Modifier.size(12.dp).background(color, CircleShape))
-}

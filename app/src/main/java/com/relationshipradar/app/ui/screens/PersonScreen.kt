@@ -23,7 +23,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -46,6 +45,7 @@ import com.relationshipradar.app.ui.Format
 import com.relationshipradar.app.ui.RadarViewModel
 import com.relationshipradar.app.ui.SectionHeader
 import com.relationshipradar.app.ui.StatusChip
+import com.relationshipradar.app.ui.ToggleRow
 import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -178,17 +178,6 @@ fun PersonScreen(vm: RadarViewModel, personId: Long, onLog: () -> Unit, onBack: 
             confirmButton = { TextButton(onClick = { vm.archive(personId); dialog = null; onBack() }) { Text("Archive") } },
             dismissButton = { TextButton(onClick = { dialog = null }) { Text("Cancel") } },
         )
-    }
-}
-
-@Composable
-private fun ToggleRow(title: String, subtitle: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Switch(checked, onChange)
     }
 }
 

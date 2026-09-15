@@ -9,6 +9,7 @@ class ConnectorRegistry(context: Context, private val repo: Repository) {
     val connectors: List<Connector> = listOf(
         CallLogConnector(context, repo),
         SmsConnector(context, repo),
+        CalendarConnector(context, repo),
     )
 
     data class RunResult(val connectorId: String, val imported: Int, val skipped: String? = null)

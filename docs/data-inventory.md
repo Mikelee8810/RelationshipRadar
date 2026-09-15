@@ -7,7 +7,7 @@ What the app stores, why, where it comes from, and how long it lives. Everything
 | Person name, category, reminder settings, notes | The relationship profile | Contacts + user | Archived on contact deletion; never auto-deleted |
 | Phone numbers, emails, contact lookup key | Match calls/texts to a person | Contacts | With the person |
 | Chat handles (`app:DisplayName`) | Match chat notifications to a person | Notification listener, confirmed by user | With the person |
-| Interaction: person, source app, type, time, direction, counts-toward-timer | The whole point: "when did I last reach out" | Call log, SMS, notifications, manual log | With the person |
+| Interaction: person, source app, type, time, direction, counts-toward-timer | The whole point: "when did I last reach out" | Call log, SMS, notifications, calendar, manual log | With the person |
 | Connector cursor (last scanned time) | Cheap idempotent re-scans | App | Overwritten each run |
 | Pending identity (unmatched number / chat name) | Ask the user once, remember the answer | Connectors | Until resolved or ignored |
 | Reminder state (how many nudges sent this cycle) | Stop after 4 backup pushes | App | Overwritten each cycle |
@@ -17,7 +17,12 @@ What the app stores, why, where it comes from, and how long it lives. Everything
 - SMS body — the `BODY` column is never queried.
 - Chat message text — the notification listener reads sender + timestamp only.
 - Call log phone numbers as free text — only used to look up a person, then dropped. Unmatched numbers sit in *pending identities* until you decide.
+- Calendar event titles, descriptions, locations — only attendee emails and start/end times are read.
 - Anything from apps not in the messaging allow-list.
+
+## Email
+
+There is no on-device outbox for Gmail/Outlook that a third-party app can read, and Gmail's notifications are not MessagingStyle. Email is therefore **manual-log only** for now ("Emailed" in the quick log). Email *addresses* are still used to match calendar attendees.
 
 ## Revoked permissions
 

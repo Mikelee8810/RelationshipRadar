@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">RelationshipRadar</string>
+    <string name="widget_description">Who needs a nudge, at a glance</string>
 </resources>

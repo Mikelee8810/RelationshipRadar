@@ -16,7 +16,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.relationshipradar.app.ui.Format
 import com.relationshipradar.app.ui.RadarViewModel
 import com.relationshipradar.app.ui.SectionHeader
+import com.relationshipradar.app.ui.ToggleRow
 import com.relationshipradar.app.work.Notifications
 
 @Composable
@@ -84,8 +84,8 @@ fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit, onOpenConne
                     Text("Reminders can't reach you until notifications are allowed.", style = MaterialTheme.typography.bodySmall)
                     Button(onClick = { notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }, Modifier.padding(vertical = 8.dp)) { Text("Allow notifications") }
                 }
-                ToggleLine("Daily roundup", "One quiet summary of everyone who is due", s.roundupEnabled, vm::setRoundupEnabled)
-                ToggleLine("Individual alerts", "Separate alert for high-priority people", s.individualAlertsEnabled, vm::setIndividualAlerts)
+                ToggleRow("Daily roundup", "One quiet summary of everyone who is due", s.roundupEnabled, vm::setRoundupEnabled)
+                ToggleRow("Individual alerts", "Separate alert for high-priority people", s.individualAlertsEnabled, vm::setIndividualAlerts)
                 Text("Roundup time: ${s.roundupHour}:00", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
                 Slider(value = s.roundupHour.toFloat(), onValueChange = { vm.setRoundupHour(it.toInt()) }, valueRange = 6f..22f, steps = 15)
                 Text("Backup nudges: day 0, 2, 4, 6 after due — then the app goes quiet and just shows the colour.", style = MaterialTheme.typography.bodySmall)
@@ -107,14 +107,4 @@ fun SettingsScreen(vm: RadarViewModel, onOpenCategories: () -> Unit, onOpenConne
             )
         }
     }
-}
-
-@Composable
-private fun ToggleLine(title: String, sub: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    ListItem(
-        headlineContent = { Text(title) },
-        supportingContent = { Text(sub) },
-        trailingContent = { Switch(checked, onChange) },
-        modifier = Modifier.fillMaxWidth(),
-    )
 }

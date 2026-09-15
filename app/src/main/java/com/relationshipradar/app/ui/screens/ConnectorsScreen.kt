@@ -38,10 +38,12 @@ fun ConnectorsScreen(vm: RadarViewModel) {
     val cursors by vm.cursors.collectAsStateWithLifecycle()
     var callsGranted by remember { mutableStateOf(vm.hasPermission(Manifest.permission.READ_CALL_LOG)) }
     var smsGranted by remember { mutableStateOf(vm.hasPermission(Manifest.permission.READ_SMS)) }
+    var calGranted by remember { mutableStateOf(vm.hasPermission(Manifest.permission.READ_CALENDAR)) }
     var listenerOn by remember { mutableStateOf(RadarNotificationListener.isEnabled(ctx)) }
     var msg by remember { mutableStateOf<String?>(null) }
 
     val callsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> callsGranted = ok; if (ok) vm.scanNow { msg = it } }
+    val calLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> calGranted = ok; if (ok) vm.scanNow { msg = it } }
     val smsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> smsGranted = ok; if (ok) vm.scanNow { msg = it } }
 
     fun cursor(id: String) = cursors.firstOrNull { it.connectorId == id }
@@ -75,6 +77,16 @@ fun ConnectorsScreen(vm: RadarViewModel) {
             )
         }
 
+        item { SectionHeader("Calendar") }
+        item {
+            SourceCard(
+                what = "Past events you and a known contact both attended count as seeing them. Reads attendee emails and times only — never titles or notes.",
+                granted = calGranted, enabled = enabled("calendar"), last = cursor("calendar"),
+                onToggle = { vm.setConnectorEnabled("calendar", it) },
+                onGrant = { calLauncher.launch(Manifest.permission.READ_CALENDAR) },
+            )
+        }
+
         item { SectionHeader("Chat apps (WhatsApp, Messenger, Instagram, Telegram, Signal, Discord, Slack, Teams)") }
         item {
             Column(Modifier.padding(horizontal = 16.dp)) {
@@ -99,7 +111,7 @@ fun ConnectorsScreen(vm: RadarViewModel) {
         item { SectionHeader("Scan") }
         item {
             Column(Modifier.padding(horizontal = 16.dp)) {
-                Text("Calls and texts are checked every 6 hours in the background. First run looks back one year.", style = MaterialTheme.typography.bodySmall)
+                Text("Calls, texts, and calendar are checked every 6 hours in the background. First run looks back one year.", style = MaterialTheme.typography.bodySmall)
                 Button(onClick = { vm.scanNow { msg = it } }, Modifier.padding(top = 8.dp)) { Text("Scan now") }
                 msg?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             }

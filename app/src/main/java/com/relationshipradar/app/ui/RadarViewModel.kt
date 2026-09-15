@@ -50,7 +50,7 @@ class RadarViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun logManual(personId: Long, type: InteractionType, timestamp: Long, approximate: Boolean, note: String) =
-        viewModelScope.launch { repo.logManual(personId, type, timestamp, approximate, note) }
+        viewModelScope.launch { repo.logManual(personId, type, timestamp, approximate, note); com.relationshipradar.app.widget.RadarWidget.refresh(getApplication()) }
 
     fun createPerson(name: String, categoryId: Long?, onDone: (Long) -> Unit = {}) =
         viewModelScope.launch { onDone(repo.createPerson(name, categoryId)) }
